@@ -1,0 +1,152 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Robots</title>
+</head>
+<body>
+<canvas id="ground" width="500" height="500"></canvas>
+<script type="text/javascript">
+class Element {
+    constructor() {
+        this.x = Math.random()*500;
+        this.y = Math.random()*500;
+        this.size = 20;
+    }
+
+    drawRect(ctx, color, text) {
+        ctx.fillStyle = color;
+        ctx.fillRect(this.x - this.size, this.y - this.size, this.size*2, this.size*2);
+        ctx.fillStyle = "black";
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "center";
+        ctx.fillText(text, this.x, this.y, this.size * 2);
+    }
+    
+    distance(other) {
+        var dx = this.x - other.x;
+        var dy = this.y - other.y;
+        return Math.sqrt(dx*dx + dy*dy);
+    }
+    
+    is(other) {
+        return this.distance(other) < 1;
+    }
+    
+    closest(elems) {
+        var mindist = Infinity;
+        var best = null;
+        elems.forEach(e => {
+            var dist = this.distance(e);
+            if (dist < mindist) {
+                best = e;
+                mindist = dist;
+            }
+        });
+        return best;
+    }
+}
+
+class Mineral extends Element {
+    constructor() {
+        super();
+        this.has = null;
+    }
+    draw(ctx) {
+        this.drawRect(ctx, "red", "Mineral");
+    }
+    iterate() {
+        if (this.has) {
+            this.x = this.has.x - this.has.size;
+            this.y = this.has.y - this.has.size;
+        }
+    }
+}
+
+class Robot extends Element {
+    constructor() {
+        super();
+        this.speed = 2e-6;
+        this.goal = null;
+        this.has = null;
+    }
+    draw(ctx) {
+        this.drawRect(ctx, "lightblue", "Robot");
+    }
+    
+    iterate(world, dt) {
+        if (!this.has) {
+            if (!this.goal) {
+                var minerals = world.elems.filter(el =>
+                                el instanceof Mineral && !el.has);
+                this.goal = this.closest(minerals);
+            }
+            if (this.goal.is(this)) {
+                this.take(this.goal);
+                this.goal = world.goal;
+            }
+        }
+
+        if (this.has) {
+            if (this.goal.is(this)) {
+                this.has.has = world.goal;
+                this.release();
+            }
+        }
+
+        if (this.goal) {
+            this.x += (this.goal.x - this.x) * dt * this.speed;
+            this.y += (this.goal.y - this.y) * dt * this.speed;
+        }
+    }
+
+    take(el) {
+        el.has = this;
+        this.has = el;
+    }
+    
+    release() {
+        this.has = null;
+        this.goal = null;
+    }
+}
+
+class Goal extends Element {
+    draw(ctx) {
+        this.drawRect(ctx, "green", "Goal");
+    }
+    iterate() {}
+}
+
+class World {
+    constructor() {
+        this.elems = [];
+        for (var i=0; i<10; i++) this.elems.push(new Mineral);
+        for (var i=0; i<3; i++) this.elems.push(new Robot);
+        this.goal = new Goal;
+    }
+}
+
+function iterate(world, dt) {
+    world.elems.forEach(e => e.iterate(world, dt));
+}
+
+function draw(world, ctx) {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+    world.goal.draw(ctx);
+    world.elems.forEach(e => e.draw(ctx));
+}
+
+function start() {
+    var ctx = document.getElementById("ground").getContext("2d");
+    var world = new World;
+    function loop(dt) {
+        iterate(world, dt);
+        draw(world, ctx);
+        requestAnimationFrame(loop);
+    }
+    loop(0);
+}
+</script>
+</body>
+</html>
