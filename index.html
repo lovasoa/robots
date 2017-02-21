@@ -68,7 +68,7 @@ class Mineral extends Element {
 class Robot extends Element {
     constructor() {
         super();
-        this.speed = 1e-3;
+        this.speed = 0.1;
         this.goal = null;
         this.has = null;
     }
@@ -151,7 +151,10 @@ function start() {
     canvas.height = SIZE;
     var ctx = canvas.getContext("2d");
     var world = new World;
-    function loop(dt) {
+    var t0 = 0;
+    function loop(t) {
+        var dt = t - t0;
+        t0 = t;
         iterate(world, dt);
         draw(world, ctx);
         requestAnimationFrame(loop);
