@@ -55,7 +55,7 @@ class Mineral extends Element {
         this.has = null;
     }
     draw(ctx) {
-        this.drawRect(ctx, "red", "Mineral");
+        this.drawRect(ctx, "#FF413699", "Mineral");
     }
     iterate() {
         if (this.has) {
@@ -73,7 +73,7 @@ class Robot extends Element {
         this.has = null;
     }
     draw(ctx) {
-        this.drawRect(ctx, "lightblue", "Robot");
+        this.drawRect(ctx, "#0074D9AA", "Robot");
     }
     
     iterate(world, dt) {
@@ -121,7 +121,7 @@ class Robot extends Element {
 
 class Goal extends Element {
     draw(ctx) {
-        this.drawRect(ctx, "green", "Goal");
+        this.drawRect(ctx, "#2ECC40", "Goal");
     }
     iterate() {}
 }
