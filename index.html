@@ -7,10 +7,12 @@
 <body>
 <canvas id="ground" width="800" height="800"></canvas>
 <script type="text/javascript">
+const SIZE = 900;
+
 class Element {
     constructor() {
-        this.x = Math.random()*800;
-        this.y = Math.random()*800;
+        this.x = Math.random()*SIZE;
+        this.y = Math.random()*SIZE;
         this.size = 20;
     }
 
@@ -30,7 +32,7 @@ class Element {
     }
     
     is(other) {
-        return this.distance(other) < 1;
+        return this.distance(other) < this.size;
     }
     
     closest(elems) {
@@ -66,7 +68,7 @@ class Mineral extends Element {
 class Robot extends Element {
     constructor() {
         super();
-        this.speed = 2e-6;
+        this.speed = 1e-3;
         this.goal = null;
         this.has = null;
     }
@@ -81,22 +83,28 @@ class Robot extends Element {
                                 el instanceof Mineral && !el.has);
                 this.goal = this.closest(minerals);
             }
-            if (this.goal.is(this)) {
-                this.take(this.goal);
-                this.goal = world.goal;
+            if (this.goal) {
+                if (this.goal.is(this)) {
+                    this.take(this.goal);
+                    this.goal = world.goal;
+                }
+                if (this.goal.has) {
+                    this.goal = null;
+                }
             }
         }
 
         if (this.has) {
-            if (this.goal.is(this)) {
+            if (this.goal && this.goal.is(this)) {
                 this.has.has = world.goal;
                 this.release();
             }
         }
 
         if (this.goal) {
-            this.x += (this.goal.x - this.x) * dt * this.speed;
-            this.y += (this.goal.y - this.y) * dt * this.speed;
+            var delta = dt * this.speed / this.distance(this.goal);
+            this.x += (this.goal.x - this.x) * delta;
+            this.y += (this.goal.y - this.y) * delta;
         }
     }
 
@@ -121,7 +129,7 @@ class Goal extends Element {
 class World {
     constructor() {
         this.elems = [];
-        for (var i=0; i<10; i++) this.elems.push(new Mineral);
+        for (var i=0; i<20; i++) this.elems.push(new Mineral);
         for (var i=0; i<3; i++) this.elems.push(new Robot);
         this.goal = new Goal;
     }
@@ -138,7 +146,10 @@ function draw(world, ctx) {
 }
 
 function start() {
-    var ctx = document.getElementById("ground").getContext("2d");
+    var canvas = document.getElementById("ground");
+    canvas.width = SIZE;
+    canvas.height = SIZE;
+    var ctx = canvas.getContext("2d");
     var world = new World;
     function loop(dt) {
         iterate(world, dt);
