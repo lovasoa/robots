@@ -10,9 +10,9 @@
 const SIZE = 900;
 
 class Element {
-    constructor() {
-        this.x = Math.random()*SIZE;
-        this.y = Math.random()*SIZE;
+    constructor(x, y) {
+        this.x = x || Math.random()*SIZE;
+        this.y = y || Math.random()*SIZE;
         this.size = 20;
     }
 
@@ -50,8 +50,8 @@ class Element {
 }
 
 class Mineral extends Element {
-    constructor() {
-        super();
+    constructor(x, y) {
+        super(x, y);
         this.has = null;
     }
     draw(ctx) {
@@ -66,8 +66,8 @@ class Mineral extends Element {
 }
 
 class Robot extends Element {
-    constructor() {
-        super();
+    constructor(x, y) {
+        super(x, y);
         this.speed = 0.1;
         this.goal = null;
         this.has = null;
@@ -160,6 +160,13 @@ function start() {
         requestAnimationFrame(loop);
     }
     loop(0);
+
+    canvas.onclick = (evt) => {
+        var x = evt.clientX - canvas.offsetLeft;
+        var y = evt.clientY - canvas.offsetTop;
+        var mineral = new Mineral(x, y);
+        world.elems.push(mineral);
+    };
 }
 start()
 </script>
